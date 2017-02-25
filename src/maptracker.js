@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Map, TileLayer } from 'react-leaflet';
 import PlainMarker from './components/plain-marker';
 import airports from './lib/airport-coordinates.js';
-import flightsAnalyzer from './lib/flights-server';
 import ArcPolyline from './components/arc-polyline.js';
 
 // const defaultAirport = airports['MCI'];
@@ -46,7 +45,7 @@ class MapTracker extends Component {
       />
     )
     const destinationMarkers = [originMarker];
-    const deals = flightsAnalyzer.matchDeals(origin.iata);
+    const deals = this.props.dealsForOrigin;
     const startCoords = [origin.latitude, origin.longitude];
 
     for (let destination in deals) {
@@ -98,7 +97,7 @@ class MapTracker extends Component {
       // return this.generateDefaultPaths();
       return
     }
-    const airportCodeList = flightsAnalyzer.airportCodes;
+    const airportCodeList = this.props.airportCodes;
     const startCoords = [origin.latitude, origin.longitude];
 
     const lineCollection = [];
@@ -137,7 +136,7 @@ class MapTracker extends Component {
   generateDefaultPaths () {
     const defaultAirportCode = 'MCI';
     const defaultAirport = airports[defaultAirportCode];
-    const airportCodeList = flightsAnalyzer.airportCodes.slice();
+    const airportCodeList = this.props.airportCodes.slice();
     const defaultCodeIndex = airportCodeList.indexOf(defaultAirportCode);
     if (defaultCodeIndex > -1) {
       airportCodeList.splice(defaultCodeIndex, 1)
@@ -188,7 +187,7 @@ class MapTracker extends Component {
     //     />
     //   )
     // }
-    const airportCodeList = flightsAnalyzer.airportCodes;
+    const airportCodeList = this.props.airportCodes;
 
     let i = airportCodeList.length;
     while (i--) {
