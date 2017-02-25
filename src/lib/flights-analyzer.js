@@ -2,8 +2,8 @@
   'use-strict';
 
   class FlightsAnalyzer {
-    constructor (rawData) {
-      this.deals = this._extractDeals(rawData);
+    constructor (flights) {
+      this.deals = flights;
       this._mapDeals();
 
       // console.log(this.deals)
