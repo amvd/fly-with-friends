@@ -167,7 +167,7 @@ class MapTracker extends Component {
   }
 
   generateDefaultMarkers () {
-    if (this.props.origin) {
+    if (this.props.origin || !this.props.airportCodes) {
       return
     }
     const markers = [];
@@ -192,6 +192,7 @@ class MapTracker extends Component {
     let i = airportCodeList.length;
     while (i--) {
       const airportCode = airportCodeList[i];
+      console.log("generating marker for:", airportCode)
       const airport = airports[airportCode];
 
       const coords = [airport.latitude, airport.longitude];

@@ -21,7 +21,8 @@ class App extends Component {
 
   componentDidMount() {
     getFlightData().then((data) => {
-      flightsAnalyzer = new FlightsAnalyzer(data);
+      flightsAnalyzer = new FlightsAnalyzer(JSON.parse(data));
+      console.log("created flightsAnalyzer", flightsAnalyzer)
 
       this.setState({
         flightData: data,
@@ -87,7 +88,7 @@ class App extends Component {
   }
 
   get dealsForOrigin () {
-    if (!flightsAnalyzer) {
+    if (!flightsAnalyzer || !this.state.origin1) {
       return []
     }
     return flightsAnalyzer.matchDeals(this.state.origin1)
