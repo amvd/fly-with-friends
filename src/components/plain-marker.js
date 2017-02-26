@@ -47,10 +47,10 @@ function renderPopup(popupText, cityName, isDestination = false, selectOriginFun
 
     return <Popup>
       <span>
-        <p>{ popupText }</p>
-        <p>
+        <div>{ popupText }</div>
+        <div>
           <strong>{cityName}</strong>
-        </p>
+        </div>
         { setOriginButton }
         { clearOriginButton }
         { linkToFrontier }

@@ -3,10 +3,16 @@ import React, { Component } from 'react';
 import './App.css';
 import MapTracker from './maptracker.js';
 import FlightsAnalyzer from './lib/flights-analyzer.js';
+import rawFlights from './lib/raw-flights';
 
 const API_URL = 'https://flights-api.azurewebsites.net/flights';
 
 let flightsAnalyzer = undefined;
+
+const USER_MODES = {
+  SINGLE_USER: 0,
+  MULTI_USER: 1
+};
 
 class App extends Component {
   constructor () {
@@ -15,20 +21,35 @@ class App extends Component {
     this.state = {
       origin1: null,
       origin2: null,
-      loading: true
+      loading: true,
+      mode: USER_MODES.SINGLE_USER
     }
   }
 
   componentDidMount() {
-    getFlightData().then((data) => {
-      flightsAnalyzer = new FlightsAnalyzer(JSON.parse(data));
-      console.log("created flightsAnalyzer", flightsAnalyzer)
+    getFlightData().then(
+      (rawData) => {
+        const flightData = JSON.parse(rawData);
+        flightsAnalyzer = new FlightsAnalyzer(flightData);
+        console.log("created flightsAnalyzer", flightsAnalyzer)
 
-      this.setState({
-        flightData: data,
-        loading: false
-      })
-    })
+        this.setState({
+          flightData: flightData,
+          loading: false
+        })
+      },
+      (errorStatus, errorText) => {
+        console.error("Unable to retrieve data from API. Loading local default data.")
+        const flightData = rawFlights;
+        flightsAnalyzer = new FlightsAnalyzer(flightData);
+        console.log("created flightsAnalyzer", flightsAnalyzer)
+
+        this.setState({
+          flightData: flightData,
+          loading: false
+        })
+      }
+    )
   }
 
   render() {
@@ -38,17 +59,20 @@ class App extends Component {
           <h1>Fly With Friends</h1>
           <h3>Cheap roundtrip flights across North America</h3>
         </div>
-        <p className="App-intro">
-          Origin: { this.state.origin1 && this.state.origin1.name }
-        </p>
-        <p>
-          <button
-            onClick={this.clearOrigin.bind(this, 'origin1')}
-          >
-            Clear Origin
-          </button>
-        </p>
         { this.renderMapTracker() }
+        <div className="main-body">
+          { this.renderModePicker() }
+          <p className="App-intro">
+            Origin: { this.state.origin1 && this.state.origin1.name }
+          </p>
+          <p>
+            <button
+              onClick={this.clearOrigin.bind(this, 'origin1')}
+            >
+              Clear Origin
+            </button>
+          </p>
+        </div>
       </div>
     );
   }
@@ -65,10 +89,15 @@ class App extends Component {
     })
   }
 
+  renderModePicker() {
+
+  }
+
   renderMapTracker () {
     if (flightsAnalyzer) {
       return (
         <MapTracker
+          userMode={this.state.mode}
           flightsAnalyzer={flightsAnalyzer}
           flightData={this.state.flightData}
           airportCodes={flightsAnalyzer.airportCodes}
@@ -91,7 +120,7 @@ class App extends Component {
     if (!flightsAnalyzer || !this.state.origin1) {
       return []
     }
-    return flightsAnalyzer.matchDeals(this.state.origin1)
+    return flightsAnalyzer.matchDeals(this.state.origin1.iata)
   }
 
   get citiesList () {

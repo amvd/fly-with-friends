@@ -8,8 +8,17 @@ import ArcPolyline from './components/arc-polyline.js';
 // const secondTestAirport = airports['OMA'];
 // const thirdTestAirport = airports['ORD'];
 
+const USER_MODES = {
+  SINGLE_USER: 0,
+  MULTI_USER: 1
+};
+
 class MapTracker extends Component {
-  render() {
+  constructor (props) {
+    super()
+  }
+
+  render () {
     /* eslint-disable */
     const position = typeof defaultAirport !== 'undefined' ? [defaultAirport.latitude, defaultAirport.longitude] : [39.895642, -97.118596];
     /* eslint-enable */
@@ -22,6 +31,7 @@ class MapTracker extends Component {
         />
         { this.generateDefaultMarkers() }
         { this.generateDealPaths() }
+        { this.generateDealMarkers() }
       </Map>
     );
 
@@ -33,25 +43,17 @@ class MapTracker extends Component {
     if (!origin) {
       return;
     }
-    console.log(origin)
+    console.log("Origin:",origin)
     const flightPaths = [];
-    const originMarker = (
-      <PlainMarker
-        key={'origin-'+origin.iata}
-        position={[origin.latitude, origin.longitude]}
-        popupText={`${origin.name} (${origin.iata})`}
-        clearOrigin={this.props.clearOrigin}
-        cityName={origin.city}
-      />
-    )
-    const destinationMarkers = [originMarker];
     const deals = this.props.dealsForOrigin;
-    const startCoords = [origin.latitude, origin.longitude];
+    // const startCoords = [origin.latitude, origin.longitude];
 
     for (let destination in deals) {
       if(!deals.hasOwnProperty(destination)) {
         continue;
       }
+      const originAirport = airports[deals[destination].FromCity];
+      const startCoords = [originAirport.latitude, originAirport.longitude];
       const destinationAirport = airports[destination];
       const endCoords = [destinationAirport.latitude, destinationAirport.longitude];
 
@@ -71,6 +73,39 @@ class MapTracker extends Component {
       );
 
       flightPaths.push(newPath);
+    }
+    return flightPaths;
+  }
+
+  generateDealMarkers () {
+    const origin = this.props.origin;
+    if (!origin) {
+      return;
+    }
+    // console.log(origin)
+    const deals = this.props.dealsForOrigin;
+    const originMarker = (
+      <PlainMarker
+        key={'origin-'+origin.iata}
+        position={[origin.latitude, origin.longitude]}
+        popupText={`${origin.name} (${origin.iata})`}
+        clearOrigin={this.props.clearOrigin}
+        cityName={origin.city}
+      />
+    )
+    const destinationMarkers = [originMarker];
+    const startCoords = [origin.latitude, origin.longitude];
+
+    for (let destination in deals) {
+      if(!deals.hasOwnProperty(destination)) {
+        continue;
+      }
+      const destinationAirport = airports[destination];
+      const endCoords = [destinationAirport.latitude, destinationAirport.longitude];
+
+      if (startCoords[0] === endCoords[0] && startCoords[1] === endCoords[1]) {
+        continue;
+      }
 
       const popupText = <div>
         <p>{destinationAirport.name}</p>
@@ -87,13 +122,13 @@ class MapTracker extends Component {
         isDestination={true}
       />)
     }
-    return flightPaths.concat(destinationMarkers);
+    return destinationMarkers;
   }
 
 
   generateAllFlightPaths () {
     const origin = this.props.origin;
-    if (!origin) {
+    if (!origin ) {
       // return this.generateDefaultPaths();
       return
     }
@@ -109,6 +144,7 @@ class MapTracker extends Component {
       }
 
       const airport = airports[airportCodeList[i]];
+
 
       const endCoords = [airport.latitude, airport.longitude];
 
@@ -167,7 +203,7 @@ class MapTracker extends Component {
   }
 
   generateDefaultMarkers () {
-    if (this.props.origin || !this.props.airportCodes) {
+    if ((this.props.userMode !== USER_MODES.SINGLE_USER && this.props.origin) || !this.props.airportCodes) {
       return
     }
     const markers = [];
@@ -192,8 +228,12 @@ class MapTracker extends Component {
     let i = airportCodeList.length;
     while (i--) {
       const airportCode = airportCodeList[i];
-      console.log("generating marker for:", airportCode)
       const airport = airports[airportCode];
+
+      const destinationMatch = this.props.deals && this.props.deals[airportCodeList[i]];
+      if (destinationMatch) {
+        continue;
+      }
 
       const coords = [airport.latitude, airport.longitude];
 

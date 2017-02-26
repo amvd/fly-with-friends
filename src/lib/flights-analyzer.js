@@ -37,6 +37,8 @@
           matches[destinationCode] = {
             outbound: [outboundTrip],
             inbound: [],
+            FromCity: outboundTrip.FromCity,
+            ToCity: outboundTrip.ToCity,
             lowestOutbound: outboundTrip.Price,
             lowestInbound: Infinity,
             lowestRoundTrip: Infinity
