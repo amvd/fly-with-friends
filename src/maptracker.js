@@ -230,6 +230,8 @@ class MapTracker extends Component {
       const airportCode = airportCodeList[i];
       const airport = airports[airportCode];
 
+      if (!airport) continue;
+
       const destinationMatch = this.props.deals && this.props.deals[airportCodeList[i]];
       if (destinationMatch) {
         continue;
